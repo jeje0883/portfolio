@@ -1,0 +1,55 @@
+body {
+    font-family: "Poppins", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+#logo {
+    height: 40% !important;
+}
+
+#myname{
+    background-color: orange;
+    font-size: 30px;
+    transition: font-size 1s ease;
+    font-weight: 800
+}
+
+#myname:hover {
+    font-size: 40px !important;
+}
+
+#mytitle {
+    width: 100px;
+    height: 100px;
+    background: yellow;
+    transition: background-color 2s;
+    font-weight: 800;
+}
+
+#mytitle:hover {
+    background: none !important;
+}
+
+
+#landing h1 {
+    font-weight: 800;
+    font-style: normal;
+    font-size: 3rem;
+}
+
+#bgconnect {
+    height: 50%;
+    object-fit: cover; 
+}
+
+#projects {
+    background-color: #f1f3f5;
+}
+
+#projectTitle {
+    font-weight: 600 !important;
+}
+#contact {
+    background-color: #f1f3f5;
+}
