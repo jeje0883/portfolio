@@ -312,16 +312,21 @@
                                 <label for="message">Message</label>
                                 <textarea class="form-control" id="message" rows="5" placeholder="Enter your message" required></textarea>
                             </div>
-                            <div class="d-flex justify-content-end pt-3">
+                            <!-- <div class="d-flex justify-content-end pt-3">
                                 <button type="submit" class="btn btn-primary ms-auto">Submit</button>
-                            </div>
+                            </div> -->
 
                                         <!-- reCAPTCHA Widget -->
-                            <div class="g-recaptcha pt-3" data-sitekey="6LeYMW8qAAAAAFEawGWYebuI_40sCzRqkDYScK3T"></div>
+                            <div class="g-recaptcha pt-3"
+                                data-sitekey="6LeYMW8qAAAAAFEawGWYebuI_40sCzRqkDYScK3T"
+                                data-callback="onCaptchaVerified"
+                                data-expired-callback="onCaptchaExpired">
+                            </div>
 
                             <div class="d-flex justify-content-end pt-3">
-                            <button type="submit" class="btn btn-primary ms-auto">Submit</button>
-                            </div>
+                                <!-- Submit button disabled by default -->
+                                <button type="submit" class="btn btn-primary ms-auto" disabled>Submit</button>
+                              </div>
 
                         </form>
                     </div>
@@ -375,49 +380,98 @@
 
     <!-- Form Submission Script -->
     <script>
-        document.getElementById("contact-form").addEventListener("submit", function(event) {
-            event.preventDefault();
-        
-            // Show a loading alert
-            const loadingAlert = document.createElement("div");
-            loadingAlert.className = "alert alert-info text-center";
-            loadingAlert.innerText = "Sending your message...";
-            document.body.appendChild(loadingAlert);
-        
-            // Get form data
-            const name = document.getElementById("name").value;
-            const email = document.getElementById("email").value;
-            const message = document.getElementById("message").value;
-        
-            // Prepare data object
-            const templateParams = {
-                from_name: name,
-                from_email: email,
-                message: message
-            };
-        
-            // Send email using EmailJS
-            emailjs.send("service_nlbk1xi", "template_e68jqnt", templateParams)
-                .then((response) => {
-                    loadingAlert.className = "alert alert-success text-center";
-                    loadingAlert.innerText = "Thank you! Your message has been sent successfully.";
-                    document.getElementById("contact-form").reset();
-                }, (error) => {
-                    loadingAlert.className = "alert alert-danger text-center";
-                    loadingAlert.innerText = "Oops! Something went wrong. Please try again.";
-                    console.error("Failed to send email:", error);
-                })
-                .finally(() => {
-                    setTimeout(() => loadingAlert.remove(), 3000);
-                });
-        });
-        
-    </script>
+        // Variables to track field validity
+        let isNameValid = false;
+        let isEmailValid = false;
+        let isMessageValid = false;
+        let isCaptchaVerified = false;
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
-  </body>
-</html>
+        // Function to check if all conditions are met
+        function validateForm() {
+          const submitButton = document.querySelector('#contact-form button[type="submit"]');
+          if (isNameValid && isEmailValid && isMessageValid && isCaptchaVerified) {
+            submitButton.disabled = false;
+          } else {
+            submitButton.disabled = true;
+          }
+        }
+    
+        // Event listeners for input fields
+        document.getElementById('name').addEventListener('input', function() {
+          isNameValid = this.value.trim() !== '';
+          validateForm();
+        });
+    
+        document.getElementById('email').addEventListener('input', function() {
+          isEmailValid = this.value.trim() !== '';
+          validateForm();
+        });
+    
+        document.getElementById('message').addEventListener('input', function() {
+          isMessageValid = this.value.trim() !== '';
+          validateForm();
+        });
+    
+        // reCAPTCHA callback function
+        function onCaptchaVerified() {
+          isCaptchaVerified = true;
+          validateForm();
+        }
+    
+        // reCAPTCHA expired callback function
+        function onCaptchaExpired() {
+          isCaptchaVerified = false;
+          validateForm();
+        }
+    
+        document.getElementById("contact-form").addEventListener("submit", function(event) {
+          event.preventDefault();
+    
+          // Show a loading alert
+          const loadingAlert = document.createElement("div");
+          loadingAlert.className = "alert alert-info text-center";
+          loadingAlert.innerText = "Sending your message...";
+          document.body.appendChild(loadingAlert);
+    
+          // Get form data
+          const name = document.getElementById("name").value.trim();
+          const email = document.getElementById("email").value.trim();
+          const message = document.getElementById("message").value.trim();
+          const recaptchaToken = grecaptcha.getResponse();
+    
+          // Prepare data object
+          const templateParams = {
+            from_name: name,
+            from_email: email,
+            message: message,
+            'g-recaptcha-response': recaptchaToken
+          };
+    
+          // Send email using EmailJS
+          emailjs.send("service_nlbk1xi", "template_e68jqnt", templateParams)
+            .then((response) => {
+              loadingAlert.className = "alert alert-success text-center";
+              loadingAlert.innerText = "Thank you! Your message has been sent successfully.";
+              document.getElementById("contact-form").reset();
+              grecaptcha.reset();
+              isCaptchaVerified = false;
+              isNameValid = false;
+              isEmailValid = false;
+              isMessageValid = false;
+              validateForm();
+            }, (error) => {
+              loadingAlert.className = "alert alert-danger text-center";
+              loadingAlert.innerText = "Oops! Something went wrong. Please try again.";
+              console.error("Failed to send email:", error);
+            })
+            .finally(() => {
+              setTimeout(() => loadingAlert.remove(), 3000);
+            });
+        });
+      </script>
+    
+      <!-- Bootstrap JS -->
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    </body>
+    </html>
